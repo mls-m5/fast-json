@@ -2,18 +2,18 @@
 #pragma once
 #include <string_view>
 
-enum class TokenType {
-    BEGIN_OBJECT,
-    END_OBJECT,
-    BEGIN_ARRAY,
-    END_ARRAY,
-    KEY,
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NULL_VALUE,
-    COLON,
-    COMMA
+enum class TokenType : unsigned {
+    BEGIN_OBJECT = 1 << 0, // 1
+    END_OBJECT = 1 << 1,   // 2
+    BEGIN_ARRAY = 1 << 2,  // 4
+    END_ARRAY = 1 << 3,    // 8
+    KEY = 1 << 4,          // 16
+    STRING = 1 << 5,       // 32
+    NUMBER = 1 << 6,       // 64
+    BOOLEAN = 1 << 7,      // 128
+    NULL_VALUE = 1 << 8,   // 256
+    COLON = 1 << 9,        // 512
+    COMMA = 1 << 10        // 1024
 };
 
 struct Token {
