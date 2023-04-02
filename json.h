@@ -4,24 +4,7 @@
 #include <string_view>
 #include <vector>
 
-enum class TokenType {
-    BEGIN_OBJECT,
-    END_OBJECT,
-    BEGIN_ARRAY,
-    END_ARRAY,
-    KEY,
-    STRING,
-    NUMBER,
-    BOOLEAN,
-    NULL_VALUE,
-    COLON,
-    COMMA
-};
-
-struct Token {
-    TokenType type;
-    std::string_view value;
-};
+#include "token.h"
 
 template <typename TokenProcessor>
 void tokenize(const std::string& input, TokenProcessor process_token) {
@@ -108,29 +91,67 @@ void tokenize(const std::string& input, TokenProcessor process_token) {
     }
 }
 
-class JsonNode {
-public:
-    JsonNode(const Token& value) : _value(value) {}
 
-    void children(JsonNode* children, size_t numChildren) {
-        _children = children;
-        _numChildren = numChildren;
-    }
 
-    const Token& value() const {
-        return _value;
-    }
+// Fix includes later
+#include <iostream>
+#include <string>
+#include <string_view>
+#include <vector>
+#include "JsonNode.h" // Assume JsonNode class is defined in "JsonNode.h"
+#include "Token.h" // Assume Token and tokenize function are defined in "Token.h"
 
-    const JsonNode* children() const {
-        return _children;
-    }
 
-    size_t numChildren() const {
-        return _numChildren;
-    }
+std::vector<JsonNode> parse_json(const std::string& input) {
+    size_t num_nodes = 0;
 
-private:
-    Token _value;
-    JsonNode* _children = nullptr;
-    size_t _numChildren = 0;
-};
+    // First pass: Count the number of JSON nodes
+    tokenize(input, [&num_nodes](const Token& token) {
+        if (token.type == TokenType::BEGIN_OBJECT || token.type == TokenType::BEGIN_ARRAY ||
+            token.type == TokenType::KEY || token.type == TokenType::STRING ||
+            token.type == TokenType::NUMBER || token.type == TokenType::BOOLEAN ||
+            token.type == TokenType::NULL_VALUE) {
+            num_nodes++;
+        }
+    });
+
+    std::vector<JsonNode> nodes(num_nodes);
+    std::vector<size_t> num_children(num_nodes, 0);
+
+    // Second pass: Create JSON nodes and link them
+    size_t current_node = 0;
+    std::vector<size_t> node_stack;
+
+    tokenize(input, [&nodes, &num_children, &current_node, &node_stack](const Token& token) {
+        switch (token.type) {
+            case TokenType::BEGIN_OBJECT:
+            case TokenType::BEGIN_ARRAY:
+            case TokenType::KEY:
+            case TokenType::STRING:
+            case TokenType::NUMBER:
+            case TokenType::BOOLEAN:
+            case TokenType::NULL_VALUE: {
+                nodes[current_node] = JsonNode(token);
+                if (!node_stack.empty()) {
+                    size_t parent_index = node_stack.back();
+                    JsonNode& parent = nodes[parent_index];
+                    size_t child_index = parent_index + 1 + num_children[parent_index];
+                    parent.children(&nodes[child_index], num_children[parent_index] + 1);
+                    num_children[parent_index]++;
+                }
+                node_stack.push_back(current_node);
+                current_node++;
+                break;
+            }
+            case TokenType::END_OBJECT:
+            case TokenType::END_ARRAY: {
+                node_stack.pop_back();
+                break;
+            }
+            default:
+                break;
+        }
+    });
+
+    return nodes;
+}
