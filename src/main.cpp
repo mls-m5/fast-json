@@ -1,23 +1,5 @@
 #include "json.h"
-
-// Test tokenizer
-void printTokensTest() {
-    std::string input = R"(
-    {
-      "name": "Alice",
-      "age": 30,
-      "city": "NYC",
-      "active": true
-    }
-    )";
-
-    tokenize(input, [](const Token &token) {
-        std::cout << "Token type: " << static_cast<int>(token.type)
-                  << ", value: "
-                  << "Token type: " << static_cast<int>(token.type)
-                  << ", value: " << token.value << std::endl;
-    });
-}
+#include <string_view>
 
 std::string token_type_to_string(TokenType type) {
     switch (type) {
@@ -44,6 +26,15 @@ std::string token_type_to_string(TokenType type) {
     default:
         return "INVALID";
     }
+}
+
+// Test tokenizer
+void printTokensTest(std::string_view input) {
+
+    tokenize(input, [](const Token &token) {
+        std::cout << "Token type: " << token_type_to_string(token.type)
+                  << ", value: " << token.value << std::endl;
+    });
 }
 
 void print_json(const std::vector<JsonNode> &nodes,
@@ -113,6 +104,7 @@ int main() {
         }
     })";
 
+    printTokensTest(example_data2);
     std::vector<JsonNode> nodes = parse_json(example_data2);
     print_json(nodes, example_data2);
 

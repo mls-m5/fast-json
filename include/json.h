@@ -107,6 +107,7 @@ std::vector<JsonNode> parse_json(std::string_view input) {
             token.type == TokenType::KEY || token.type == TokenType::STRING ||
             token.type == TokenType::NUMBER ||
             token.type == TokenType::BOOLEAN ||
+            token.type == TokenType::COLON ||
             token.type == TokenType::NULL_VALUE) {
             num_nodes++;
         }
@@ -125,7 +126,8 @@ std::vector<JsonNode> parse_json(std::string_view input) {
                  switch (token.type) {
                  case TokenType::BEGIN_OBJECT:
                  case TokenType::BEGIN_ARRAY:
-                 case TokenType::KEY: {
+                 case TokenType::KEY: { // TODO: Needs to check for colons. KEY
+                                        // is never used by tokenizer
                      auto &new_node = nodes.at(current_node);
                      new_node = JsonNode(token);
                      auto next = &nodes.at(current_node + 1);
