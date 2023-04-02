@@ -47,6 +47,7 @@ std::string token_type_to_string(TokenType type) {
 }
 
 void print_json(const std::vector<JsonNode> &nodes,
+                std::string_view whole_file,
                 size_t start = 0,
                 int level = 0) {
     const JsonNode &node = nodes[start];
@@ -54,11 +55,13 @@ void print_json(const std::vector<JsonNode> &nodes,
         std::cout << "  ";
     }
 
+    TokenLocation location = get_token_position(node.value(), whole_file);
     std::cout << token_type_to_string(node.value().type) << ": "
-              << node.value().value << std::endl;
+              << node.value().value << " (Line: " << location.line_number
+              << ", Column: " << location.column_number << ")" << std::endl;
 
     for (size_t i = 0; i < node.numChildren(); ++i) {
-        print_json(nodes, start + i + 1, level + 1);
+        print_json(nodes, whole_file, start + i + 1, level + 1);
     }
 }
 
@@ -71,8 +74,47 @@ int main() {
         "courses": ["math", "history", "chemistry"]
     })";
 
-    std::vector<JsonNode> nodes = parse_json(example_data);
-    print_json(nodes);
+    std::string example_data2 = R"({
+        "person": {
+            "name": "John",
+            "age": 30,
+            "city": "New York",
+            "isStudent": false,
+            "courses": ["math", "history", "chemistry"],
+            "contact": {
+                "email": "john@example.com",
+                "phone": {
+                    "home": "123-456-7890",
+                    "work": "987-654-3210"
+                }
+            },
+            "hobbies": [
+                {
+                    "name": "running",
+                    "location": ["park", "gym"]
+                },
+                {
+                    "name": "reading",
+                    "genres": ["mystery", "science fiction", "fantasy"]
+                }
+            ],
+            "family": [
+                {
+                    "relation": "sister",
+                    "name": "Jane",
+                    "age": 32
+                },
+                {
+                    "relation": "brother",
+                    "name": "Tom",
+                    "age": 28
+                }
+            ]
+        }
+    })";
+
+    std::vector<JsonNode> nodes = parse_json(example_data2);
+    print_json(nodes, example_data2);
 
     return 0;
 }
