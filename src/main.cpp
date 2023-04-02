@@ -10,9 +10,10 @@ int main() {
     }
     )";
 
-    tokenize(input, [](const Token& token) {
+    tokenize(input, [](const Token &token) {
         std::cout << "Token type: " << static_cast<int>(token.type)
-                  << ", value: "<< "Token type: " << static_cast<int>(token.type)
+                  << ", value: "
+                  << "Token type: " << static_cast<int>(token.type)
                   << ", value: " << token.value << std::endl;
     });
 
