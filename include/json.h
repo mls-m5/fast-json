@@ -7,7 +7,7 @@
 #include <vector>
 
 template <typename TokenProcessor>
-void tokenize(const std::string &input, TokenProcessor process_token) {
+void tokenize(std::string_view input, TokenProcessor process_token) {
     size_t pos = 0;
 
     while (pos < input.size()) {
@@ -97,7 +97,7 @@ void tokenize(const std::string &input, TokenProcessor process_token) {
     }
 }
 
-std::vector<JsonNode> parse_json(const std::string &input) {
+std::vector<JsonNode> parse_json(std::string_view input) {
     size_t num_nodes = 0;
 
     // First pass: Count the number of JSON nodes
@@ -125,27 +125,37 @@ std::vector<JsonNode> parse_json(const std::string &input) {
                  switch (token.type) {
                  case TokenType::BEGIN_OBJECT:
                  case TokenType::BEGIN_ARRAY:
-                 case TokenType::KEY:
+                 case TokenType::KEY: {
+                     auto &new_node = nodes.at(current_node);
+                     new_node = JsonNode(token);
+                     auto next = &nodes.at(current_node + 1);
+                     new_node.children(next);
+
+                     if (!node_stack.empty()) {
+                         auto &parent = nodes[node_stack.back()];
+                         parent.numChildren(parent.numChildren() + 1);
+                     }
+
+                     node_stack.push_back(current_node);
+
+                     ++current_node;
+                     break;
+                 }
                  case TokenType::STRING:
                  case TokenType::NUMBER:
                  case TokenType::BOOLEAN:
                  case TokenType::NULL_VALUE: {
                      nodes[current_node] = JsonNode(token);
-                     if (!node_stack.empty()) {
-                         size_t parent_index = node_stack.back();
-                         JsonNode &parent = nodes[parent_index];
-                         size_t child_index =
-                             parent_index + 1 + num_children[parent_index];
-                         parent.children(&nodes[child_index],
-                                         num_children[parent_index] + 1);
-                         num_children[parent_index]++;
-                     }
-                     node_stack.push_back(current_node);
-                     current_node++;
+                     auto &parent = nodes[node_stack.back()];
+                     parent.numChildren(parent.numChildren() + 1);
+                     ++current_node;
                      break;
                  }
                  case TokenType::END_OBJECT:
                  case TokenType::END_ARRAY: {
+                     if (node_stack.empty()) {
+                         return;
+                     }
                      node_stack.pop_back();
                      break;
                  }

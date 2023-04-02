@@ -4,6 +4,10 @@
 
 class JsonNode {
 public:
+    JsonNode(const JsonNode &) = delete;
+    JsonNode(JsonNode &&) = default;
+    JsonNode &operator=(const JsonNode &) = delete;
+    JsonNode &operator=(JsonNode &&) = default;
     JsonNode() = default;
     JsonNode(const Token &value)
         : _value(value) {}
@@ -27,6 +31,10 @@ public:
 
     size_t numChildren() const {
         return _numChildren;
+    }
+
+    size_t numChildren(size_t num) {
+        return _numChildren = num;
     }
 
 private:
