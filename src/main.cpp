@@ -59,6 +59,46 @@ void print_json(const JsonNode &node,
     }
 }
 
+void jsonOutTest() {
+    std::cout << "\n----- json out ---- \n";
+    std::ostream &os = std::cout;
+    JsonOut json_out(os);
+
+    json_out["int_key"] = 42;
+    json_out["double_key"] = 3.14;
+    json_out["string_key"] = "hello";
+    json_out["bool_key"] = true;
+    json_out["null_key"] = "null";
+
+    {
+        // Nested object
+        auto nested_obj = json_out["nested_obj"];
+        nested_obj["nested_int_key"] = 100;
+        nested_obj["nested_bool_key"] = false;
+        nested_obj["nested_string_key"] = "nested string";
+    }
+
+    {
+        // Nested array
+        std::vector<int> numbers = {1, 2, 3, 4, 5};
+        auto nested_array = json_out["nested_array"];
+        for (size_t i = 0; i < numbers.size(); ++i) {
+            auto element = nested_array["array_element_" + std::to_string(i)];
+            element["index"] = static_cast<int>(i);
+            element["value"] = numbers[i];
+        }
+    }
+
+    {
+        // Deeply nested object
+        auto deeply_nested_obj = json_out["deeply_nested_obj"];
+        auto nested_level_1 = deeply_nested_obj["level_1"];
+        auto nested_level_2 = nested_level_1["level_2"];
+        auto nested_level_3 = nested_level_2["level_3"];
+        nested_level_3["deep_key"] = "deep_value";
+    }
+}
+
 int main() {
     std::string example_data = R"({
         "name": "John",
@@ -150,6 +190,8 @@ int main() {
             }
         }
     }
+
+    jsonOutTest();
 
     return 0;
 }
