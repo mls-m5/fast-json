@@ -68,7 +68,7 @@ void jsonOutTest() {
     json_out["double_key"] = 3.14;
     json_out["string_key"] = "hello";
     json_out["bool_key"] = true;
-    json_out["null_key"] = "null";
+    json_out["null_key"] = nullptr;
 
     {
         // Nested object

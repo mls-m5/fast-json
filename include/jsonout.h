@@ -39,6 +39,11 @@ public:
         return JsonOut(_os, _indent + 1);
     }
 
+    JsonOut &operator=(std::nullptr_t) {
+        _os << ": null,\n";
+        return *this;
+    }
+
 private:
     std::ostream &_os;
     int _indent = 0;
