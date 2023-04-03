@@ -2,6 +2,7 @@
 
 #include "token.h"
 #include <charconv>
+#include <iomanip>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -203,3 +204,72 @@ private:
     const JsonNode *_children = nullptr;
     const JsonNode *_next = nullptr;
 };
+
+void dump(const JsonNode &node, std::ostream &os, int indent = 0) {
+
+    int current_width =
+        os.width(); // Capture the current width set by std::setw
+
+    if (!current_width) {
+        current_width = 2;
+    }
+
+    auto print_indent = [current_width, &os](int n) {
+        os << std::setw(n * current_width) << "";
+    };
+
+    switch (node.value().type) {
+    case TokenType::BEGIN_OBJECT: {
+        os << "{\n";
+        bool first = true;
+        for (const auto &child : node) {
+            if (!first) {
+                os << ",\n";
+            }
+            first = false;
+            print_indent(indent + 1);
+            os << std::quoted(child.value().value) << ": ";
+            dump(*child.children(), os, indent + 1);
+        }
+        os << "\n";
+        print_indent(indent);
+        os << "}";
+        break;
+    }
+    case TokenType::BEGIN_ARRAY: {
+        os << "[\n";
+        bool first = true;
+        for (const auto &child : node) {
+            if (!first) {
+                os << ",\n";
+            }
+            first = false;
+            print_indent(indent + 1);
+            dump(child, os, indent + 1);
+        }
+        os << "\n";
+        print_indent(indent);
+        os << "]";
+        break;
+    }
+    case TokenType::STRING:
+        os << std::quoted(node.str());
+        break;
+    case TokenType::NUMBER:
+        os << node.number();
+        break;
+    case TokenType::BOOLEAN:
+        os << std::boolalpha << node.boolean();
+        break;
+    case TokenType::NULL_VALUE:
+        os << "null";
+        break;
+    default:
+        break;
+    }
+}
+
+std::ostream &operator<<(std::ostream &os, const JsonNode &node) {
+    dump(node, os);
+    return os;
+}
