@@ -3,6 +3,7 @@
 #include <string_view>
 
 enum class TokenType : unsigned {
+    INVALID = 0,
     BEGIN_OBJECT = 1 << 0, // 1
     END_OBJECT = 1 << 1,   // 2
     BEGIN_ARRAY = 1 << 2,  // 4
@@ -17,7 +18,7 @@ enum class TokenType : unsigned {
 };
 
 struct Token {
-    TokenType type;
+    TokenType type = TokenType::INVALID;
     std::string_view value;
 };
 
