@@ -1,5 +1,6 @@
 #include "json.h"
 #include "jsonnode.h"
+#include "jsonout.h"
 #include <algorithm>
 #include <chrono>
 #include <ostream>
@@ -128,6 +129,27 @@ int main() {
     }
 
     std::cout << root;
+
+    std::cout << "\n----- json out ---- \n";
+
+    {
+        std::ostream &os = std::cout;
+        os << std::setw(2); // Set the width using std::setw
+
+        {
+            auto json_out = JsonOut{os};
+            json_out["key1"] = 123;
+            json_out["key2"] = "hello";
+            json_out["key3"] = true;
+            json_out["key4"] = nullptr;
+
+            {
+                auto nested_obj = json_out["nested_obj"];
+                nested_obj["inner_key1"] = "inner_value1";
+                nested_obj["inner_key2"] = false;
+            }
+        }
+    }
 
     return 0;
 }
