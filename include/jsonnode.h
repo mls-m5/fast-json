@@ -111,7 +111,7 @@ public:
         return at(name);
     }
 
-    const_iterator find(std::string_view name) const {
+    const JsonNode *find(std::string_view name) const {
         if (_value.type == TokenType::KEY) {
             return _children->find(name);
         }
@@ -119,10 +119,10 @@ public:
         for (auto it = begin(); it != end(); ++it) {
             it->validate_key();
             if (it->value().value == name) {
-                return it;
+                return it->children();
             }
         }
-        return end();
+        return nullptr;
     }
 
     const JsonNode &operator*() const {
