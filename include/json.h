@@ -230,6 +230,7 @@ JsonNode *r(Tokenizer::const_iterator &it,
     case TokenType::END_OBJECT:
     case TokenType::COLON:
     case TokenType::KEY:
+    case TokenType::INVALID:
         throw std::runtime_error{"unexpected character " +
                                  std::string{token.value}};
         break;
