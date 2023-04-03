@@ -111,8 +111,7 @@ int main() {
     auto root = nodes.begin();
     print_json(nodes.front(), example_data2);
 
-    if (JsonNode::const_iterator person = root->find("person");
-        person != root->end()) {
+    if (auto person = root->find("person")) {
         std::cout << "found 'person' in root" << std::endl;
 
         std::cout << "persons name is " << person->at("name").value().value;
