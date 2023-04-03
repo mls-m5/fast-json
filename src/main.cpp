@@ -1,5 +1,7 @@
 #include "json.h"
+#include <chrono>
 #include <string_view>
+#include <thread>
 
 std::string token_type_to_string(TokenType type) {
     switch (type) {
@@ -31,10 +33,14 @@ std::string token_type_to_string(TokenType type) {
 // Test tokenizer
 void printTokensTest(std::string_view input) {
 
-    tokenize(input, [](const Token &token) {
+    for (auto &token : Tokenizer{input}) {
+        //    tokenize(input, [](const Token &token) {
         std::cout << "Token type: " << token_type_to_string(token.type)
                   << ", value: " << token.value << std::endl;
-    });
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds{10}); // Prevent output from being flodded
+        //    });
+    }
 }
 
 void print_json(const JsonNode &node,
