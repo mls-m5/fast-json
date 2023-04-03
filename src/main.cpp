@@ -23,8 +23,6 @@ std::string token_type_to_string(TokenType type) {
         return "BOOLEAN";
     case TokenType::NULL_VALUE:
         return "NULL_VALUE";
-        //    case TokenType::UNKNOWN:
-        //        return "UNKNOWN";
     default:
         return "INVALID";
     }
@@ -32,14 +30,11 @@ std::string token_type_to_string(TokenType type) {
 
 // Test tokenizer
 void printTokensTest(std::string_view input) {
-
     for (auto &token : Tokenizer{input}) {
-        //    tokenize(input, [](const Token &token) {
         std::cout << "Token type: " << token_type_to_string(token.type)
                   << ", value: " << token.value << std::endl;
         std::this_thread::sleep_for(
             std::chrono::milliseconds{10}); // Prevent output from being flodded
-        //    });
     }
 }
 
