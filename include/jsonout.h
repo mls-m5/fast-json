@@ -5,15 +5,12 @@ class JsonOut {
 public:
     explicit JsonOut(std::ostream &os, int indent = 0)
         : _os(os)
-        , _indent(indent)
-        , _is_root(indent == 0) {
-        if (_is_root) {
-            _os << "{\n";
-        }
-    }
+        , _indent(indent) {}
 
     ~JsonOut() {
-        if (_is_root) {
+        if (_is_object) {
+            _indent -= 1;
+            print_indent();
             _os << "}\n";
         }
     }
@@ -29,7 +26,14 @@ public:
         return *this;
     }
 
-    JsonOut operator[](const std::string &key) {
+    JsonOut operator[](std::string_view key) {
+        if (!_is_object) {
+            if (_indent > 0) {
+                _os << ": ";
+            }
+            _os << "{\n";
+            _is_object = true;
+        }
         print_indent();
         _os << "\"" << key << "\"";
         return JsonOut(_os, _indent + 1);
@@ -37,11 +41,11 @@ public:
 
 private:
     std::ostream &_os;
-    int _indent;
-    bool _is_root;
+    int _indent = 0;
+    bool _is_object = false;
 
     void print_indent() {
-        for (int i = 0; i < _indent; ++i) {
+        for (int i = 0; i < _indent + 1; ++i) {
             _os << "  ";
         }
     }
