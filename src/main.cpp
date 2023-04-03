@@ -37,11 +37,9 @@ void printTokensTest(std::string_view input) {
     });
 }
 
-void print_json(const std::vector<JsonNode> &nodes,
+void print_json(const JsonNode &node,
                 std::string_view whole_file,
-                size_t start = 0,
                 int level = 0) {
-    const JsonNode &node = nodes[start];
     for (int i = 0; i < level; ++i) {
         std::cout << "  ";
     }
@@ -51,8 +49,8 @@ void print_json(const std::vector<JsonNode> &nodes,
               << node.value().value << " (Line: " << location.line_number
               << ", Column: " << location.column_number << ")" << std::endl;
 
-    for (size_t i = 0; i < node.numChildren(); ++i) {
-        print_json(nodes, whole_file, start + i + 1, level + 1);
+    for (const auto &child : node) {
+        print_json(child, whole_file, level + 1);
     }
 }
 
@@ -106,7 +104,7 @@ int main() {
 
     printTokensTest(example_data2);
     std::vector<JsonNode> nodes = parse_json(example_data2);
-    print_json(nodes, example_data2);
+    print_json(nodes.front(), example_data2);
 
     return 0;
 }

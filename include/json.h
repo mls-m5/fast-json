@@ -2,6 +2,7 @@
 #include "jsonnode.h"
 #include "token.h"
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -104,7 +105,7 @@ std::vector<JsonNode> parse_json(std::string_view input) {
     tokenize(input, [&num_nodes](const Token &token) {
         if (token.type == TokenType::BEGIN_OBJECT ||
             token.type == TokenType::BEGIN_ARRAY ||
-            token.type == TokenType::KEY || token.type == TokenType::STRING ||
+            token.type == TokenType::STRING ||
             token.type == TokenType::NUMBER ||
             token.type == TokenType::BOOLEAN ||
             token.type == TokenType::COLON ||
@@ -113,44 +114,79 @@ std::vector<JsonNode> parse_json(std::string_view input) {
         }
     });
 
+    num_nodes += 100; // TODO: Fix this
+
     std::vector<JsonNode> nodes(num_nodes);
     std::vector<size_t> num_children(num_nodes, 0);
 
     // Second pass: Create JSON nodes and link them
-    size_t current_node = 0;
-    std::vector<size_t> node_stack;
+    size_t current_index = 0;
+    std::vector<size_t> node_stack = {0};
 
     tokenize(input,
-             [&nodes, &num_children, &current_node, &node_stack](
+             [&nodes, &num_children, &current_index, &node_stack](
                  const Token &token) {
+                 auto &current_node = nodes.at(current_index);
+
+                 auto add_child = [&node_stack,
+                                   &nodes,
+                                   current_index,
+                                   &current_node]() {
+                     auto previous_index = node_stack.back();
+                     if (previous_index != current_index) {
+                         auto &previous = nodes.at(previous_index);
+                         previous.next(&current_node);
+                     }
+                     else {
+                         if (node_stack.size() > 1) {
+                             auto &parent =
+                                 nodes[node_stack.at(node_stack.size() - 2)];
+                             parent.children(&current_node);
+                         }
+                     }
+                 };
+
                  switch (token.type) {
                  case TokenType::BEGIN_OBJECT:
-                 case TokenType::BEGIN_ARRAY:
-                 case TokenType::KEY: { // TODO: Needs to check for colons. KEY
-                                        // is never used by tokenizer
-                     auto &new_node = nodes.at(current_node);
-                     new_node = JsonNode(token);
-                     auto next = &nodes.at(current_node + 1);
-                     new_node.children(next);
+                 case TokenType::BEGIN_ARRAY: {
+                     current_node = JsonNode{token};
 
-                     if (!node_stack.empty()) {
-                         auto &parent = nodes[node_stack.back()];
-                         parent.numChildren(parent.numChildren() + 1);
+                     add_child();
+
+                     node_stack.back() = current_index;
+                     node_stack.push_back(current_index + 1);
+
+                     ++current_index;
+                     break;
+                 }
+                 case TokenType::COLON: {
+                     auto previous_index = node_stack.back();
+                     if (previous_index != current_index) {
+                         auto &previous = nodes.at(previous_index);
+                         previous.value(
+                             Token{TokenType::KEY, previous.value().value});
+                     }
+                     else {
+                         throw std::runtime_error{"unexpected token " +
+                                                  std::string{token.value}};
                      }
 
-                     node_stack.push_back(current_node);
+                     //                     node_stack.back() = current_index;
+                     node_stack.push_back(current_index + 1);
 
-                     ++current_node;
+                     //                     ++current_index;
                      break;
                  }
                  case TokenType::STRING:
                  case TokenType::NUMBER:
                  case TokenType::BOOLEAN:
                  case TokenType::NULL_VALUE: {
-                     nodes[current_node] = JsonNode(token);
-                     auto &parent = nodes[node_stack.back()];
-                     parent.numChildren(parent.numChildren() + 1);
-                     ++current_node;
+                     nodes[current_index] = JsonNode(token);
+
+                     add_child();
+
+                     node_stack.back() = current_index;
+                     ++current_index;
                      break;
                  }
                  case TokenType::END_OBJECT:
