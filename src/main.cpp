@@ -115,6 +115,16 @@ int main() {
         std::cout << "found 'person' in root" << std::endl;
 
         std::cout << "persons name is " << person->at("name").value().value;
+
+        std::cout << "person properties:\n";
+        person->visit([](std::string_view key, const JsonNode &value) {
+            std::cout << "   key: " << key << " = " << value.value().value
+                      << "\n";
+        });
+
+        std::cout << "int age " << person->at("age").number() << "\n";
+
+        std::cout << "bool " << person->at("isStudent").boolean() << std::endl;
     }
 
     return 0;

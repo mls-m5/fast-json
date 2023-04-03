@@ -1,6 +1,7 @@
 #pragma once
 
 #include "token.h"
+#include <charconv>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -125,14 +126,43 @@ public:
         return nullptr;
     }
 
-    const JsonNode &operator*() const {
-        validate_key();
-        return *_children;
+    // Iterato through an object and call a function for each key-value-pair
+    // The first argument should be the name and the second a const JsonNode&
+    template <typename F>
+    void visit(F f) const {
+        validate_object();
+
+        for (auto &key : *this) {
+            auto &child = *key.children();
+            // Note: Wierd syntax here is to have special behaviour for value()
+            // for keys
+            f(key._value.value, child);
+        }
     }
 
-    const JsonNode *operator->() const {
-        validate_key();
-        return _children;
+    template <typename T = int>
+    T number() const {
+        validate_number();
+        int out;
+        const std::from_chars_result result =
+            std::from_chars(_value.value.data(),
+                            _value.value.data() + _value.value.size(),
+                            out);
+        if (result.ec == std::errc::invalid_argument ||
+            result.ec == std::errc::result_out_of_range) {
+            throw std::invalid_argument{"invalid number"};
+        }
+        return out;
+    }
+
+    bool boolean() const {
+        validate_bool();
+        return _value.value == "true";
+    }
+
+    std::string_view str() const {
+        validate_string();
+        return _value.value;
     }
 
 private:
@@ -148,6 +178,24 @@ private:
         }
         if (!_children) {
             throw std::invalid_argument{"key has no child!"};
+        }
+    }
+
+    void validate_number() const {
+        if (_value.type != TokenType::NUMBER) {
+            throw std::invalid_argument{"json entity is not of type 'number'"};
+        }
+    }
+
+    void validate_bool() const {
+        if (_value.type != TokenType::BOOLEAN) {
+            throw std::invalid_argument{"json entity is not of type 'boolean'"};
+        }
+    }
+
+    void validate_string() const {
+        if (_value.type != TokenType::STRING) {
+            throw std::invalid_argument{"json entity is not of type 'string'"};
         }
     }
 
