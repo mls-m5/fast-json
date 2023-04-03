@@ -186,7 +186,7 @@ JsonNode *r(Tokenizer::const_iterator &it,
     switch (token.type) {
     case TokenType::BEGIN_OBJECT:
     case TokenType::BEGIN_ARRAY: {
-        ++current_index;
+        //        ++current_index;
         current_node = JsonNode{token};
 
         JsonNode *previous = nullptr;
@@ -261,11 +261,9 @@ std::vector<JsonNode> parse_json(std::string_view input) {
             token.type == TokenType::BOOLEAN ||
             token.type == TokenType::COLON ||
             token.type == TokenType::NULL_VALUE) {
-            num_nodes++;
+            ++num_nodes;
         }
     }
-
-    num_nodes += 100; // TODO: Fix this
 
     std::vector<JsonNode> nodes(num_nodes);
     int current_index = 0;
