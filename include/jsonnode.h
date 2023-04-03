@@ -1,6 +1,9 @@
 #pragma once
 
 #include "token.h"
+#include <stdexcept>
+#include <string>
+#include <string_view>
 
 class JsonNode {
 public:
@@ -20,6 +23,7 @@ public:
         reference operator*() const {
             return *_node;
         }
+
         pointer operator->() const {
             return _node;
         }
@@ -88,7 +92,65 @@ public:
         _next = node;
     }
 
+    const JsonNode &at(std::string_view name) const {
+        if (_value.type == TokenType::KEY) {
+            return _children->at(name);
+        }
+        validate_object();
+        for (auto &child : *this) {
+            child.validate_key();
+            if (child.value().value == name) {
+                // Note that a key actually holds it's value as a child
+                return *child.children();
+            }
+        }
+        throw std::out_of_range{"element " + std::string{name} + " not found"};
+    }
+
+    const JsonNode &operator[](std::string_view name) const {
+        return at(name);
+    }
+
+    const_iterator find(std::string_view name) const {
+        if (_value.type == TokenType::KEY) {
+            return _children->find(name);
+        }
+        validate_object();
+        for (auto it = begin(); it != end(); ++it) {
+            it->validate_key();
+            if (it->value().value == name) {
+                return it;
+            }
+        }
+        return end();
+    }
+
+    const JsonNode &operator*() const {
+        validate_key();
+        return *_children;
+    }
+
+    const JsonNode *operator->() const {
+        validate_key();
+        return _children;
+    }
+
 private:
+    void validate_object() const {
+        if (_value.type != TokenType::BEGIN_OBJECT) {
+            throw std::invalid_argument{"json entity is not of type 'object'"};
+        }
+    }
+
+    void validate_key() const {
+        if (_value.type != TokenType::KEY) {
+            throw std::invalid_argument{"json entity is not of type 'key'"};
+        }
+        if (!_children) {
+            throw std::invalid_argument{"key has no child!"};
+        }
+    }
+
     Token _value;
     const JsonNode *_children = nullptr;
     const JsonNode *_next = nullptr;

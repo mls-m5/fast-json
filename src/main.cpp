@@ -1,5 +1,8 @@
 #include "json.h"
+#include "jsonnode.h"
+#include <algorithm>
 #include <chrono>
+#include <ostream>
 #include <string_view>
 #include <thread>
 
@@ -103,9 +106,17 @@ int main() {
         }
     })";
 
-    printTokensTest(example_data2);
-    std::vector<JsonNode> nodes = parse_json(example_data2);
+    //    printTokensTest(example_data2);
+    const std::vector<JsonNode> nodes = parse_json(example_data2);
+    auto root = nodes.begin();
     print_json(nodes.front(), example_data2);
+
+    if (JsonNode::const_iterator person = root->find("person");
+        person != root->end()) {
+        std::cout << "found 'person' in root" << std::endl;
+
+        std::cout << "persons name is " << person->at("name").value().value;
+    }
 
     return 0;
 }

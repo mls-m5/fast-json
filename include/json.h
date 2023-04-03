@@ -106,7 +106,8 @@ public:
                         _pos++; // Move past the closing quote
                         std::string_view value(_input.data() + start,
                                                _pos - start);
-                        _current_token = {TokenType::STRING, value};
+                        _current_token = {TokenType::STRING,
+                                          value.substr(1, value.size() - 2)};
                         return;
                     }
                     else {
