@@ -72,6 +72,13 @@ public:
         return *this;
     }
 
+    JsonOut &operator=(const std::string &value) {
+        _os << ": \"";
+        print_escaped(_os, value);
+        _os << "\",\n";
+        return *this;
+    }
+
     JsonOut operator[](std::string_view key) {
         if (!_is_object) {
             if (_indent > 0) {
