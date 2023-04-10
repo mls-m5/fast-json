@@ -1,6 +1,8 @@
+#pragma once
 
 #include "jsonnode.h"
 #include "token.h"
+#include <filesystem>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -147,7 +149,8 @@ public:
                             return;
                         }
                         else {
-                            throw std::runtime_error("Unexpected value");
+                            throw std::runtime_error("Unexpected value " +
+                                                     std::string{value});
                         }
                     }
                     else {
@@ -253,7 +256,6 @@ JsonNode *parse_recursive(Tokenizer::const_iterator &it,
 
     return nullptr;
 };
-
 } // namespace json_internal
 
 std::vector<JsonNode> parse_json(std::string_view input) {
