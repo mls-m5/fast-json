@@ -1,5 +1,7 @@
 #include <iostream>
+#include <ostream>
 #include <string>
+#include <string_view>
 
 namespace json {
 
@@ -24,7 +26,47 @@ public:
     }
 
     JsonOut &operator=(const char *value) {
-        _os << ": \"" << value << "\",\n";
+        //        _os << ": \"" << std::string_view{value} << "\",\n";
+        return (*this) = std::string_view{value};
+    }
+
+    static void print_escaped(std::ostream &os, std::string_view value) {
+        for (char c : value) {
+            switch (c) {
+            case '\"':
+                os << "\\\"";
+                break;
+            case '\\':
+                os << "\\\\";
+                break;
+            case '/':
+                os << "\\/";
+                break;
+            case '\b':
+                os << "\\b";
+                break;
+            case '\f':
+                os << "\\f";
+                break;
+            case '\n':
+                os << "\\n";
+                break;
+            case '\r':
+                os << "\\r";
+                break;
+            case '\t':
+                os << "\\t";
+                break;
+            default:
+                os << c;
+            }
+        }
+    }
+
+    JsonOut &operator=(std::string_view value) {
+        _os << ": \"";
+        print_escaped(_os, value);
+        _os << "\",\n";
         return *this;
     }
 
