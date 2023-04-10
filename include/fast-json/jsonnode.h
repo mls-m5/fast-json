@@ -7,6 +7,8 @@
 #include <string>
 #include <string_view>
 
+namespace json {
+
 class JsonNode {
 public:
     class const_iterator {
@@ -128,15 +130,16 @@ public:
     }
 
     // Iterato through an object and call a function for each key-value-pair
-    // The first argument should be the name and the second a const JsonNode&
+    // The first argument should be the name and the second a const
+    // JsonNode&
     template <typename F>
     void visit(F f) const {
         validate_object();
 
         for (auto &key : *this) {
             auto &child = *key.children();
-            // Note: Wierd syntax here is to have special behaviour for value()
-            // for keys
+            // Note: Wierd syntax here is to have special behaviour for
+            // value() for keys
             f(key._value.value, child);
         }
     }
@@ -273,3 +276,4 @@ std::ostream &operator<<(std::ostream &os, const JsonNode &node) {
     dump(node, os);
     return os;
 }
+} // namespace json

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 
+namespace json {
+
 class JsonOut {
 public:
     explicit JsonOut(std::ostream &os, int indent = 0)
@@ -55,3 +57,5 @@ private:
         }
     }
 };
+
+} // namespace json

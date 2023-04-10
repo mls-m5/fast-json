@@ -2,6 +2,8 @@
 #pragma once
 #include <string_view>
 
+namespace json {
+
 enum class TokenType : unsigned {
     INVALID = 0,
     BEGIN_OBJECT = 1 << 0, // 1
@@ -48,3 +50,5 @@ TokenLocation get_token_position(const Token &token,
 
     return TokenLocation{line_number, column_number};
 }
+
+} // namespace json
