@@ -7,6 +7,10 @@
 #include <string_view>
 #include <vector>
 
+namespace json {
+
+namespace json_internal {
+
 class Tokenizer {
 public:
     class const_iterator {
@@ -177,9 +181,9 @@ private:
     std::string_view _input;
 };
 
-JsonNode *r(Tokenizer::const_iterator &it,
-            std::vector<JsonNode> &nodes,
-            int &current_index) {
+JsonNode *parse_recursive(Tokenizer::const_iterator &it,
+                          std::vector<JsonNode> &nodes,
+                          int &current_index) {
     auto &token = *it;
     auto &current_node = nodes.at(current_index);
 
@@ -206,11 +210,11 @@ JsonNode *r(Tokenizer::const_iterator &it,
                 }
                 previous->value(Token{TokenType::KEY, previous->value().value});
                 ++it;
-                auto value = r(it, nodes, current_index);
+                auto value = parse_recursive(it, nodes, current_index);
                 previous->children(value);
             }
             else {
-                auto new_node = r(it, nodes, current_index);
+                auto new_node = parse_recursive(it, nodes, current_index);
                 if (!new_node) {
                     continue;
                 }
@@ -250,7 +254,10 @@ JsonNode *r(Tokenizer::const_iterator &it,
     return nullptr;
 };
 
+} // namespace json_internal
+
 std::vector<JsonNode> parse_json(std::string_view input) {
+    using namespace json_internal;
     size_t num_nodes = 0;
 
     // First pass: Count the number of JSON nodes
@@ -270,7 +277,9 @@ std::vector<JsonNode> parse_json(std::string_view input) {
     int current_index = 0;
 
     auto it = Tokenizer{input}.begin();
-    r(it, nodes, current_index);
+    parse_recursive(it, nodes, current_index);
 
     return nodes;
 }
+
+} // namespace json

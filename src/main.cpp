@@ -1,11 +1,14 @@
-#include "json.h"
-#include "jsonnode.h"
-#include "jsonout.h"
+// #include "json.h"
+#include "fast-json/json.h"
+#include "fast-json/jsonnode.h"
+#include "fast-json/jsonout.h"
 #include <algorithm>
 #include <chrono>
 #include <ostream>
 #include <string_view>
 #include <thread>
+
+using namespace json;
 
 std::string token_type_to_string(TokenType type) {
     switch (type) {
@@ -34,7 +37,7 @@ std::string token_type_to_string(TokenType type) {
 
 // Test tokenizer
 void printTokensTest(std::string_view input) {
-    for (auto &token : Tokenizer{input}) {
+    for (auto &token : json_internal::Tokenizer{input}) {
         std::cout << "Token type: " << token_type_to_string(token.type)
                   << ", value: " << token.value << std::endl;
         std::this_thread::sleep_for(
