@@ -29,8 +29,8 @@ struct TokenLocation {
     size_t column_number;
 };
 
-TokenLocation get_token_position(const Token &token,
-                                 std::string_view whole_file) {
+inline TokenLocation get_token_position(const Token &token,
+                                        std::string_view whole_file) {
     size_t line_number = 1;
     size_t column_number = 1;
 
