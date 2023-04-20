@@ -208,7 +208,7 @@ private:
     const JsonNode *_next = nullptr;
 };
 
-void dump(const JsonNode &node, std::ostream &os, int indent = 0) {
+inline void dump(const JsonNode &node, std::ostream &os, int indent = 0) {
 
     int current_width =
         os.width(); // Capture the current width set by std::setw
@@ -272,7 +272,7 @@ void dump(const JsonNode &node, std::ostream &os, int indent = 0) {
     }
 }
 
-std::ostream &operator<<(std::ostream &os, const JsonNode &node) {
+inline std::ostream &operator<<(std::ostream &os, const JsonNode &node) {
     dump(node, os);
     return os;
 }
