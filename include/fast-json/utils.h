@@ -8,7 +8,7 @@
 
 namespace json {
 
-std::string read_file_content(const std::filesystem::path &filename) {
+inline std::string read_file_content(const std::filesystem::path &filename) {
     std::ifstream input_file(filename);
     if (input_file.is_open()) {
         std::stringstream buffer;
@@ -21,7 +21,7 @@ std::string read_file_content(const std::filesystem::path &filename) {
     }
 }
 
-std::string read_stream_content(std::istream &stream) {
+inline std::string read_stream_content(std::istream &stream) {
     std::stringstream buffer{};
     buffer << stream.rdbuf();
     return buffer.str();
