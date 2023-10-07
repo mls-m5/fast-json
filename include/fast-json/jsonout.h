@@ -32,13 +32,13 @@ public:
 
     template <typename T>
     JsonOut &operator=(const T &value) {
-        *_os << ": " << value; // << ",\n";
+        *_os << ": " << value;
+        ;
         set_pending_newline();
         return *this;
     }
 
     JsonOut &operator=(const char *value) {
-        //        _os << ": \"" << std::string_view{value} << "\",\n";
         return (*this) = std::string_view{value};
     }
 
