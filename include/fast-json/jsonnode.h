@@ -171,9 +171,68 @@ public:
         return _value.value == "true";
     }
 
-    std::string_view str() const {
+    std::string_view raw() const {
         validate_string();
         return _value.value;
+    }
+
+    // Get a string where the escape characters is applied
+    std::string str() const {
+        auto res = std::string{};
+
+        bool escaped = false;
+        for (auto c :
+             raw()) { // assuming str() returns the original escaped string
+            if (escaped) {
+                char e = 0;
+                switch (c) {
+                case '\"':
+                    e = '\"';
+                    break; // Quotation mark
+                case '\\':
+                    e = '\\';
+                    break; // Reverse solidus
+                case '/':
+                    e = '/';
+                    break; // Solidus
+                case 'b':
+                    e = '\b';
+                    break; // Backspace
+                case 'f':
+                    e = '\f';
+                    break; // Form feed
+                case 'n':
+                    e = '\n';
+                    break; // Newline
+                case 'r':
+                    e = '\r';
+                    break; // Carriage return
+                case 't':
+                    e = '\t';
+                    break; // Horizontal tab
+                // add more case labels here if needed
+                default:
+                    // Handle error: invalid escape sequence.
+                    throw std::runtime_error("Invalid escape sequence: \\" +
+                                             std::string(1, c));
+                }
+                res.push_back(e);
+                escaped = false;
+            }
+            else if (c == '\\') {
+                escaped = true;
+            }
+            else {
+                res.push_back(c);
+            }
+        }
+
+        // Check if string ends with a single backslash
+        if (escaped) {
+            throw std::runtime_error("String ends with an unescaped backslash");
+        }
+
+        return res;
     }
 
 private:
@@ -263,7 +322,7 @@ inline void dump(const JsonNode &node, std::ostream &os, int indent = 0) {
         break;
     }
     case TokenType::STRING:
-        os << std::quoted(node.str());
+        os << std::quoted(node.raw());
         break;
     case TokenType::NUMBER:
         os << node.number();
