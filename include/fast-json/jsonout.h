@@ -4,15 +4,20 @@
 #include <ostream>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace json {
 
 class JsonOut {
 public:
-    JsonOut(const JsonOut &) = default;
-    JsonOut(JsonOut &&) = default;
-    JsonOut &operator=(const JsonOut &) = default;
-    JsonOut &operator=(JsonOut &&) = default;
+    JsonOut(const JsonOut &) = delete;
+    JsonOut(JsonOut &&j)
+        : _os{std::exchange(j._os, nullptr)}
+        , _parent{j._parent}
+        , _indent{j._indent}
+        , _is_object{j._is_object}
+        , _is_array{j._is_array}
+        , _has_pending_newline{j._has_pending_newline} {}
 
     explicit JsonOut(std::ostream &os,
                      int indent = 0,
@@ -22,18 +27,27 @@ public:
         , _parent{parent} {}
 
     ~JsonOut() {
+        if (!_os) {
+            return;
+        }
         if (_is_object) {
             _indent -= 1;
             print_pending_newline(false);
             print_indent();
-            *_os << "}\n";
+            *_os << "}";
+        }
+        if (_is_array) {
+            _indent -= 1;
+            print_pending_newline(false);
+            print_indent();
+            *_os << "]";
         }
     }
 
     template <typename T>
     JsonOut &operator=(const T &value) {
-        *_os << ": " << value;
-        ;
+        try_colon();
+        *_os << value;
         set_pending_newline();
         return *this;
     }
@@ -90,7 +104,8 @@ public:
     }
 
     JsonOut &operator=(std::string_view value) {
-        *_os << ": \"";
+        try_colon();
+        *_os << "\"";
         print_escaped(*_os, value);
         *_os << "\"";
         set_pending_newline();
@@ -98,7 +113,8 @@ public:
     }
 
     JsonOut &operator=(const std::string &value) {
-        *_os << ": \"";
+        try_colon();
+        *_os << "\"";
         print_escaped(*_os, value);
         *_os << "\"";
         set_pending_newline();
@@ -108,7 +124,8 @@ public:
     JsonOut operator[](std::string_view key) {
         print_pending_newline();
         if (!_is_object) {
-            if (_indent > 0) {
+            //            if (_indent > 0) {
+            if (_parent && _parent->_is_object) {
                 *_os << ": ";
             }
             *_os << "{\n";
@@ -120,13 +137,15 @@ public:
     }
 
     JsonOut &operator=(std::nullptr_t) {
-        *_os << ": null";
+        try_colon();
+        *_os << "null";
         set_pending_newline();
         return *this;
     }
 
     JsonOut &operator=(bool value) {
-        *_os << ": " << (value ? "true" : "false");
+        try_colon();
+        *_os << (value ? "true" : "false");
         set_pending_newline();
         return *this;
     }
@@ -137,11 +156,43 @@ public:
         }
     }
 
+    /// For arrays, create a new element on the back and
+    JsonOut push_back() {
+        print_pending_newline();
+        if (!_is_array) {
+            try_colon();
+            *_os << "[\n";
+        }
+        print_indent();
+        _is_array = true;
+        _has_pending_newline = true;
+
+        set_pending_newline();
+
+        return JsonOut(*_os, _indent + 1, this);
+    }
+
+    /// More ideomatic way to do push_back. Assumes the current element is a
+    /// array and push a element to it
+    /// Note: To push objects: use push_back() (without arguments) and build a
+    /// object on the result of that
+    template <typename T>
+    void push_back(const T &value) {
+        push_back() = value;
+    }
+
 private:
+    void try_colon() {
+        if (_parent && _parent->_is_object) {
+            *_os << ": ";
+        }
+    }
+
     std::ostream *_os = nullptr;
     JsonOut *_parent = nullptr;
     int _indent = 0;
     bool _is_object = false;
+    bool _is_array = false;
     bool _has_pending_newline = false;
 
     void print_indent() {
