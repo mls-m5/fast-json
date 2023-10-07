@@ -10,3 +10,36 @@ TEST(json_JsonOut, BasicTypes) {
     out["there"] = "you!";
     out["boolean"] = true;
 }
+
+TEST(json_JsonOut, array_test) {
+    {
+        auto out = json::JsonOut{std::cerr};
+
+        {
+            auto a = out.push_back();
+
+            a["hello"] = 10;
+            a["there"] = "you!";
+        }
+
+        {
+            auto b = out.push_back();
+            b["boolean"] = true;
+        }
+
+        out.push_back() = 10;
+        out.push_back(20);
+    }
+
+    std::cerr << "\ntest 2\n";
+
+    {
+        auto out = json::JsonOut{std::cerr};
+
+        {
+            auto a = out["a"];
+            a.push_back() = 20;
+        }
+        { out["b"].push_back() = 10; }
+    }
+}
