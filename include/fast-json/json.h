@@ -258,7 +258,24 @@ inline JsonNode *parse_recursive(Tokenizer::const_iterator &it,
 };
 } // namespace json_internal
 
-inline std::vector<JsonNode> parse_json(std::string_view input) {
+/// A container for the result
+struct JsonRoot {
+    std::vector<JsonNode> nodes;
+
+    const JsonNode *operator->() const {
+        return &nodes.front();
+    }
+
+    const JsonNode &operator*() const {
+        return nodes.front();
+    }
+
+    const JsonNode &operator[](std::string_view name) const {
+        return nodes.front().at(name);
+    }
+};
+
+inline JsonRoot parse_json(std::string_view input) {
     using namespace json_internal;
     size_t num_nodes = 0;
 
@@ -281,7 +298,7 @@ inline std::vector<JsonNode> parse_json(std::string_view input) {
     auto it = Tokenizer{input}.begin();
     parse_recursive(it, nodes, current_index);
 
-    return nodes;
+    return {std::move(nodes)};
 }
 
 } // namespace json

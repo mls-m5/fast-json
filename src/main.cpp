@@ -151,11 +151,11 @@ int main() {
     })";
 
     //    printTokensTest(example_data2);
-    const std::vector<JsonNode> nodes = parse_json(example_data2);
-    auto &root = nodes.front();
-    print_json(nodes.front(), example_data2);
+    const JsonRoot root = parse_json(example_data2);
+    //    auto &root = nodes.front();
+    print_json(root.nodes.front(), example_data2);
 
-    if (auto person = root.find("person")) {
+    if (auto person = root->find("person")) {
         std::cout << "found 'person' in root" << std::endl;
 
         std::cout << "persons name is " << person->at("name").value().value;
@@ -171,7 +171,7 @@ int main() {
         std::cout << "bool " << person->at("isStudent").boolean() << std::endl;
     }
 
-    std::cout << root;
+    std::cout << *root;
 
     std::cout << "\n----- json out ---- \n";
 

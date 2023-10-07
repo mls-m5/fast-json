@@ -73,6 +73,13 @@ public:
         return _value = value;
     }
 
+    const JsonNode &front() const {
+        if (!_children) {
+            throw std::out_of_range{"no children in node"};
+        }
+        return *_children;
+    }
+
     const_iterator begin() const {
         return const_iterator(children());
     }
