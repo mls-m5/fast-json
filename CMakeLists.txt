@@ -18,3 +18,5 @@ target_link_libraries(${PROJECT_NAME} json_parser_lib)
 
 add_subdirectory(lib)
 add_subdirectory(test)
+
+add_library(FastJson::FastJson ALIAS json_parser_lib)
