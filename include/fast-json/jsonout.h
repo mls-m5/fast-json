@@ -10,14 +10,14 @@ namespace json {
 class JsonOut {
 public:
     JsonOut(const JsonOut &) = default;
-    JsonOut(JsonOut &&) = delete;
-    JsonOut &operator=(const JsonOut &) = delete;
-    JsonOut &operator=(JsonOut &&) = delete;
+    JsonOut(JsonOut &&) = default;
+    JsonOut &operator=(const JsonOut &) = default;
+    JsonOut &operator=(JsonOut &&) = default;
 
     explicit JsonOut(std::ostream &os,
                      int indent = 0,
                      JsonOut *parent = nullptr)
-        : _os(os)
+        : _os(&os)
         , _indent(indent)
         , _parent{parent} {}
 
@@ -26,13 +26,13 @@ public:
             _indent -= 1;
             print_pending_newline(false);
             print_indent();
-            _os << "}\n";
+            *_os << "}\n";
         }
     }
 
     template <typename T>
     JsonOut &operator=(const T &value) {
-        _os << ": " << value; // << ",\n";
+        *_os << ": " << value; // << ",\n";
         set_pending_newline();
         return *this;
     }
@@ -47,10 +47,10 @@ public:
     void print_pending_newline(bool should_use_comma = true) {
         if (_has_pending_newline) {
             if (should_use_comma) {
-                _os << ",\n";
+                *_os << ",\n";
             }
             else {
-                _os << "\n";
+                *_os << "\n";
             }
             _has_pending_newline = false;
         }
@@ -90,17 +90,17 @@ public:
     }
 
     JsonOut &operator=(std::string_view value) {
-        _os << ": \"";
-        print_escaped(_os, value);
-        _os << "\"";
+        *_os << ": \"";
+        print_escaped(*_os, value);
+        *_os << "\"";
         set_pending_newline();
         return *this;
     }
 
     JsonOut &operator=(const std::string &value) {
-        _os << ": \"";
-        print_escaped(_os, value);
-        _os << "\"";
+        *_os << ": \"";
+        print_escaped(*_os, value);
+        *_os << "\"";
         set_pending_newline();
         return *this;
     }
@@ -109,24 +109,24 @@ public:
         print_pending_newline();
         if (!_is_object) {
             if (_indent > 0) {
-                _os << ": ";
+                *_os << ": ";
             }
-            _os << "{\n";
+            *_os << "{\n";
             _is_object = true;
         }
         print_indent();
-        _os << "\"" << key << "\"";
-        return JsonOut(_os, _indent + 1, this);
+        *_os << "\"" << key << "\"";
+        return JsonOut(*_os, _indent + 1, this);
     }
 
     JsonOut &operator=(std::nullptr_t) {
-        _os << ": null";
+        *_os << ": null";
         set_pending_newline();
         return *this;
     }
 
     JsonOut &operator=(bool value) {
-        _os << ": " << (value ? "true" : "false");
+        *_os << ": " << (value ? "true" : "false");
         set_pending_newline();
         return *this;
     }
@@ -138,7 +138,7 @@ public:
     }
 
 private:
-    std::ostream &_os;
+    std::ostream *_os = nullptr;
     JsonOut *_parent = nullptr;
     int _indent = 0;
     bool _is_object = false;
@@ -147,7 +147,7 @@ private:
     void print_indent() {
         print_pending_newline();
         for (int i = 0; i < _indent + 1; ++i) {
-            _os << "  ";
+            *_os << "  ";
         }
     }
 };
