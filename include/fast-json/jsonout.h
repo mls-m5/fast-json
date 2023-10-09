@@ -8,8 +8,18 @@
 
 namespace json {
 
+/// JsonOut is used to print json objects. It is a simplified implementation
+/// that does not create a real json object, but instead writes to the specified
+/// output stream while pretending to create a object
+///
+/// Note that this class acts as a reference, and newly
+/// created instances can be moved by value when copied to instead of being used
+/// as references.
 class JsonOut {
 public:
+    JsonOut &operator=(const JsonOut &) = delete;
+    JsonOut &operator=(JsonOut &&) = delete;
+
     JsonOut(const JsonOut &) = delete;
     JsonOut(JsonOut &&j)
         : _os{std::exchange(j._os, nullptr)}
@@ -27,6 +37,10 @@ public:
         , _parent{parent} {}
 
     ~JsonOut() {
+        finish();
+    }
+
+    void finish() {
         if (!_os) {
             return;
         }
@@ -42,6 +56,7 @@ public:
             print_indent();
             *_os << "]";
         }
+        _os = nullptr;
     }
 
     template <typename T>
