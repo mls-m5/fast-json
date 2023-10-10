@@ -27,14 +27,27 @@ public:
         , _indent{j._indent}
         , _is_object{j._is_object}
         , _is_array{j._is_array}
-        , _has_pending_newline{j._has_pending_newline} {}
+        , _has_pending_newline{j._has_pending_newline}
+        , _indent_width{j._indent_width} {}
 
     explicit JsonOut(std::ostream &os,
+                     int indent_width = 2,
                      int indent = 0,
                      JsonOut *parent = nullptr)
         : _os(&os)
+        , _indent_width(indent_width)
         , _indent(indent)
         , _parent{parent} {}
+
+    static inline JsonOut pretty(std::ostream &os) {
+        return JsonOut{os};
+    }
+
+    /// Convenience for those who does not want to remember that -1 means no
+    /// pretty print
+    static inline JsonOut inlined(std::ostream &os) {
+        return JsonOut{os, -1};
+    }
 
     ~JsonOut() {
         finish();
@@ -76,10 +89,12 @@ public:
     void print_pending_newline(bool should_use_comma = true) {
         if (_has_pending_newline) {
             if (should_use_comma) {
-                *_os << ",\n";
+                *_os << ",";
+                new_line();
             }
             else {
-                *_os << "\n";
+                //                *_os << "\n";
+                new_line();
             }
             _has_pending_newline = false;
         }
@@ -139,16 +154,16 @@ public:
     JsonOut operator[](std::string_view key) {
         print_pending_newline();
         if (!_is_object) {
-            //            if (_indent > 0) {
             if (_parent && _parent->_is_object) {
                 *_os << ": ";
             }
-            *_os << "{\n";
+            *_os << "{";
+            new_line();
             _is_object = true;
         }
         print_indent();
         *_os << "\"" << key << "\"";
-        return JsonOut(*_os, _indent + 1, this);
+        return JsonOut(*_os, _indent_width, _indent + 1, this);
     }
 
     JsonOut &operator=(std::nullptr_t) {
@@ -176,7 +191,8 @@ public:
         print_pending_newline();
         if (!_is_array) {
             try_colon();
-            *_os << "[\n";
+            *_os << "[";
+            new_line();
         }
         print_indent();
         _is_array = true;
@@ -184,7 +200,7 @@ public:
 
         set_pending_newline();
 
-        return JsonOut(*_os, _indent + 1, this);
+        return JsonOut(*_os, _indent_width, _indent + 1, this);
     }
 
     /// More ideomatic way to do push_back. Assumes the current element is a
@@ -206,14 +222,26 @@ private:
     std::ostream *_os = nullptr;
     JsonOut *_parent = nullptr;
     int _indent = 0;
+    int8_t _indent_width = 0; // A value of -1 represents no indentation
     bool _is_object = false;
     bool _is_array = false;
     bool _has_pending_newline = false;
 
     void print_indent() {
+        if (_indent_width == -1) {
+            *_os << " ";
+            return;
+        }
         print_pending_newline();
-        for (int i = 0; i < _indent + 1; ++i) {
-            *_os << "  ";
+        for (int i = 0; i < (_indent + 1) * _indent_width; ++i) {
+            *_os << " ";
+        }
+    }
+
+    void new_line() {
+        if (_indent_width != -1) {
+            *_os << "\n";
+            return;
         }
     }
 };
