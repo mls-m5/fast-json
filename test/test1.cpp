@@ -43,3 +43,14 @@ TEST(json_JsonOut, array_test) {
         { out["b"].push_back() = 10; }
     }
 }
+
+TEST(json_JsonOut, InlineOutput) {
+    {
+        auto out = json::JsonOut{std::cerr, -1};
+        out["hello"] = 10;
+        out["there"] = "you!";
+        out["boolean"] = true;
+    }
+    std::cerr << "\n";
+    std::cerr << "hello\n";
+}
