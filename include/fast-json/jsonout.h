@@ -8,6 +8,12 @@
 
 namespace json {
 
+// Concept that checks if a type T has a to_json member function
+template <typename T>
+concept HasToJsonFunction = requires(T &obj, struct JsonOut &json) {
+    { obj.to_json(json) } -> std::same_as<void>;
+};
+
 /// JsonOut is used to print json objects. It is a simplified implementation
 /// that does not create a real json object, but instead writes to the specified
 /// output stream while pretending to create a object
@@ -73,10 +79,18 @@ public:
     }
 
     template <typename T>
+        requires(!HasToJsonFunction<T>)
     JsonOut &operator=(const T &value) {
         try_colon();
         *_os << value;
         set_pending_newline();
+        return *this;
+    }
+
+    template <typename T>
+        requires HasToJsonFunction<T>
+    JsonOut &operator=(const T &value) {
+        value.to_json(*this);
         return *this;
     }
 
