@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
+enable_testing()
+
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
@@ -7,7 +9,7 @@ endif()
 
 project(json_parser)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(json_parser_lib INTERFACE)

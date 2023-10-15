@@ -22,6 +22,5 @@ endfunction()
 
 # Add tests
 add_json_parser_test(test1)
-#add_json_parser_test(test2)
+add_json_parser_test(serialization_macro_test)
 
-enable_testing()

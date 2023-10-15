@@ -9,6 +9,11 @@
 
 namespace json {
 
+template <typename T>
+concept HasFromJsonFunction = requires(T &obj, const class JsonNode &json) {
+    { obj.from_json(json) };
+};
+
 class JsonNode {
 public:
     class const_iterator {
@@ -157,7 +162,7 @@ public:
     template <typename T = int>
     T number() const {
         validate_number();
-        int out;
+        T out = {};
         const std::from_chars_result result =
             std::from_chars(_value.value.data(),
                             _value.value.data() + _value.value.size(),
@@ -238,6 +243,30 @@ public:
         return res;
     }
 
+    template <typename T>
+    T as() const {
+        return number<T>();
+    }
+
+    template <typename T>
+        requires HasFromJsonFunction<T>
+    T as() const {
+        auto ret = T{};
+        ret.from_json(*this);
+        return ret;
+    }
+
+    template <typename T>
+    void get_to(T &value) const {
+        value = as<T>();
+    }
+
+    template <typename T>
+        requires HasFromJsonFunction<T>
+    void get_to(T &value) const {
+        value.from_json(*this);
+    }
+
 private:
     void validate_object() const {
         if (_value.type != TokenType::BEGIN_OBJECT) {
@@ -276,6 +305,16 @@ private:
     const JsonNode *_children = nullptr;
     const JsonNode *_next = nullptr;
 };
+
+template <>
+std::string JsonNode::as<std::string>() const {
+    return str();
+}
+
+template <>
+bool JsonNode::as<bool>() const {
+    return boolean();
+}
 
 inline void dump(const JsonNode &node, std::ostream &os, int indent = 0) {
 
