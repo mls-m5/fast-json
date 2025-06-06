@@ -91,9 +91,6 @@ public:
     }
 
     const_iterator begin() const {
-        if (!_children) {
-            throw std::out_of_range{"no children in node"};
-        }
         return const_iterator(children());
     }
 
