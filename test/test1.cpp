@@ -1,17 +1,19 @@
 
 #include "fast-json/jsonout.h"
-#include <gtest/gtest.h>
-#include <iostream>
-#include <sstream>
+#include "mls-unit-test/unittest.h"
+// #include <iostream>
+// #include <sstream>
 
-TEST(json_JsonOut, BasicTypes) {
+TEST_SUIT_BEGIN(json_JsonOut)
+
+TEST_CASE("BasicTypes") {
     auto out = json::JsonOut{std::cerr};
     out["hello"] = 10;
     out["there"] = "you!";
     out["boolean"] = true;
 }
 
-TEST(json_JsonOut, array_test) {
+TEST_CASE("array_test") {
     {
         auto out = json::JsonOut{std::cerr};
 
@@ -44,7 +46,7 @@ TEST(json_JsonOut, array_test) {
     }
 }
 
-TEST(json_JsonOut, InlineOutput) {
+TEST_CASE("InlineOutput") {
     {
         auto out = json::JsonOut{std::cerr, -1};
         out["hello"] = 10;
@@ -54,3 +56,5 @@ TEST(json_JsonOut, InlineOutput) {
     std::cerr << "\n";
     std::cerr << "hello\n";
 }
+
+TEST_SUIT_END

@@ -2,7 +2,7 @@
 #include "fast-json/jsonnode.h"
 #include "fast-json/jsonout.h"
 #include "fast-json/serialize.h"
-#include <gtest/gtest.h>
+#include "mls-unit-test/unittest.h"
 #include <iostream>
 #include <sstream>
 
@@ -38,7 +38,9 @@ struct Hello_five_members {
     bool operator==(const Hello_five_members &) const = default;
 };
 
-TEST(Serialization, BasicDefinedSerialization) {
+TEST_SUIT_BEGIN(Serialization)
+
+TEST_CASE("BasicDefinedSerialization") {
     auto hello = Hello1{};
 
     hello.hello = 20;
@@ -72,3 +74,5 @@ TEST(Serialization, BasicDefinedSerialization) {
         EXPECT_EQ(helloC.there, hello.there);
     }
 }
+
+TEST_SUIT_END
