@@ -168,17 +168,20 @@ public:
         }
     }
 
-    /// Get the value as a number as a number.
+    /// Get the value as a number. The whole number must fit the requested
+    /// type: an integer type accepts only integer notation ("12", "-3"), so
+    /// "1.5" and "2e3" throw std::invalid_argument instead of being truncated;
+    /// a floating point type accepts the full JSON number syntax.
     template <typename T = int>
     T number() const {
         validate_number();
         auto out = T{};
+        const auto *end = _value.value.data() + _value.value.size();
         const std::from_chars_result result =
-            std::from_chars(_value.value.data(),
-                            _value.value.data() + _value.value.size(),
-                            out);
+            std::from_chars(_value.value.data(), end, out);
         if (result.ec == std::errc::invalid_argument ||
-            result.ec == std::errc::result_out_of_range) {
+            result.ec == std::errc::result_out_of_range ||
+            result.ptr != end) {
             throw std::invalid_argument{"invalid number"};
         }
         return out;
@@ -386,7 +389,7 @@ inline void dump(const JsonNode &node, std::ostream &os, int indent = 0) {
         os << std::quoted(node.raw());
         break;
     case TokenType::NUMBER:
-        os << node.number();
+        os << node.value().value; // The number as written
         break;
     case TokenType::BOOLEAN:
         os << std::boolalpha << node.boolean();
