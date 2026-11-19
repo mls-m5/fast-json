@@ -323,12 +323,12 @@ private:
 };
 
 template <>
-std::string JsonNode::as<std::string>() const {
+inline std::string JsonNode::as<std::string>() const {
     return str();
 }
 
 template <>
-bool JsonNode::as<bool>() const {
+inline bool JsonNode::as<bool>() const {
     return boolean();
 }
 
