@@ -14,6 +14,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(json_parser_lib INTERFACE)
 target_include_directories(json_parser_lib INTERFACE include)
+# The serialization macros require conforming variadic macro expansion in MSVC.
+target_compile_options(json_parser_lib INTERFACE $<$<CXX_COMPILER_ID:MSVC>:/Zc:preprocessor>)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 target_link_libraries(${PROJECT_NAME} json_parser_lib)

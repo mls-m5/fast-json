@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -8,9 +9,11 @@
 
 namespace json {
 
+class JsonOut;
+
 // Concept that checks if a type T has a to_json member function
 template <typename T>
-concept HasToJsonFunction = requires(T &obj, struct JsonOut &json) {
+concept HasToJsonFunction = requires(T &obj, JsonOut &json) {
     { obj.to_json(json) } -> std::same_as<void>;
 };
 

@@ -9,8 +9,10 @@
 
 namespace json {
 
+class JsonNode;
+
 template <typename T>
-concept HasFromJsonFunction = requires(T &obj, const class JsonNode &json) {
+concept HasFromJsonFunction = requires(T &obj, const JsonNode &json) {
     { obj.from_json(json) };
 };
 
